@@ -3,10 +3,16 @@
 import { expect, it } from "vitest";
 import { z } from "zod";
 
-const StarWarsPerson = z.object({
+const SplitString = z.string().transform((str) => str.split(" "));
+
+const RawStarWarsPerson = z.object({
   name: z.string(),
 });
-//^ 🕵️‍♂️
+
+const StarWarsPerson = RawStarWarsPerson.transform((person) => ({
+  ...person,
+  nameAsArray: SplitString.parse(person.name),
+}));
 
 const StarWarsPeopleResults = z.object({
   results: z.array(StarWarsPerson),
@@ -14,7 +20,7 @@ const StarWarsPeopleResults = z.object({
 
 export const fetchStarWarsPeople = async () => {
   const data = await fetch("https://swapi.dev/api/people/").then((res) =>
-    res.json(),
+    res.json()
   );
 
   const parsedData = StarWarsPeopleResults.parse(data);
